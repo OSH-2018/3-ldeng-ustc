@@ -1,0 +1,21 @@
+# depslib dependency file v1.0
+1526725288 source:/home/ldeng/Files/OSH/Lab03/project/main.cpp
+	<string.h>
+	<stdlib.h>
+	<errno.h>
+	<fuse.h>
+	<sys/mman.h>
+	<iostream>
+	<inttypes.h>
+	<functional>
+	<string>
+	<time.h>
+	"mytypes.h"
+
+1526725898 /home/ldeng/Files/OSH/Lab03/project/mytypes.h
+	<iostream>
+	<cinttypes>
+	<functional>
+	<utility>
+	<fuse.h>
+
