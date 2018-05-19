@@ -83,7 +83,7 @@ static void *oshfs_init(struct fuse_conn_info *conn)
     for(int i=freeNum; i<(int)Blocknr; i++){
         qmem->push((MemNo)i);
     }
-    qmem->prt();
+    //qmem->prt();
 
     return NULL;
 }
@@ -106,15 +106,11 @@ static int create_filenode(const char *filename, const struct stat *st)
         cerr << "Filename too long!" << endl;
         return -ENAMETOOLONG;
     }
-
-    //cout << "name test OK!" << endl;
     //ql->prt();
 
     while(!ql->empty() && referenceCount[ql->front().first] == 0){   //使用的是已被回收的信息块
         ql->pop();
     }
-
-    cout<<"recycle"<<endl;
 
     if(ql->empty()){    //当前无可用位置
         if(qmem->empty()){
@@ -129,15 +125,10 @@ static int create_filenode(const char *filename, const struct stat *st)
         }
     }
 
-    //cout<<"mem OK!"<<endl;
-
     Location ln = ql->front();
-    //cout<<"Location:"<<ln.first<<","<<(int)ln.second<<endl;
     ql->pop();
     Filenode *newnode = ltoN(ln);
     strcpy(newnode->filename, filename);
-
-    //cout<<"set filename OK!"<<endl;
 
     memcpy(&(newnode->st), st, sizeof(struct stat));
     newnode -> content = (MemNo)0;
@@ -210,7 +201,7 @@ static int oshfs_write(const char *path, const char *buf, size_t size, off_t off
         return -ENOENT;
     }
 
-    prtNode(node);
+    //prtNode(node);
 
     if((size_t)(offset + size) > Blocksize*(node->st.st_blocks)){ //将文件块补够
         if(node->content == 0){  //若是空节点，需要连上第一个块
