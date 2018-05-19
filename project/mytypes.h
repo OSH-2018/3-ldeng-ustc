@@ -144,7 +144,7 @@ public:
         //cout << "clearhash:" << h << endl;
         while(arrNo[h] != 0){   //查找到空节点
             Filenode *tmp = locationToNode({arrNo[h], arrPos[h]});
-            cout << tmp->filename << endl;
+            //cout << tmp->filename << endl;
             if(tmp->filename == name){
                 arrNo[h] = 0;
                 arrPos[h] = 0;
