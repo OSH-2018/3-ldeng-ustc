@@ -59,7 +59,7 @@ void prtNode(Filenode *node){
 
 static void *oshfs_init(struct fuse_conn_info *conn)
 {
-    cout<<"*init"<<endl;
+    //cout<<"*init"<<endl;
     // 分配freeNum个块(连续的)用于储存元信息
     mem[0] = mmap(NULL, Blocksize * freeNum , PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
     memset(mem[0], 0, Blocksize * freeNum);
@@ -90,7 +90,7 @@ static void *oshfs_init(struct fuse_conn_info *conn)
 
 static Filenode *get_filenode(const char *path)
 {
-    cout<<"get_filenode:"<<path<<endl;
+    //cout<<"get_filenode:"<<path<<endl;
     Location l = hashmap->findLocation(path+1);
     if(l == Location(0,0))
         return NULL;
@@ -100,17 +100,15 @@ static Filenode *get_filenode(const char *path)
 
 static int create_filenode(const char *filename, const struct stat *st)
 {
-    cout<<"create_filenode:"<<filename<<endl;
+    //cout<<"create_filenode:"<<filename<<endl;
 
     if(strlen(filename) > Maxnamelen){
         cerr << "Filename too long!" << endl;
         return -ENAMETOOLONG;
     }
 
-    cout << "name test OK!" << endl;
-    ql->prt();
-
-    cout<<ql->empty()<<endl;
+    //cout << "name test OK!" << endl;
+    //ql->prt();
 
     while(!ql->empty() && referenceCount[ql->front().first] == 0){   //使用的是已被回收的信息块
         ql->pop();
@@ -131,15 +129,15 @@ static int create_filenode(const char *filename, const struct stat *st)
         }
     }
 
-    cout<<"mem OK!"<<endl;
+    //cout<<"mem OK!"<<endl;
 
     Location ln = ql->front();
-    cout<<"Location:"<<ln.first<<","<<(int)ln.second<<endl;
+    //cout<<"Location:"<<ln.first<<","<<(int)ln.second<<endl;
     ql->pop();
     Filenode *newnode = ltoN(ln);
     strcpy(newnode->filename, filename);
 
-    cout<<"set filename OK!"<<endl;
+    //cout<<"set filename OK!"<<endl;
 
     memcpy(&(newnode->st), st, sizeof(struct stat));
     newnode -> content = (MemNo)0;
@@ -156,20 +154,15 @@ static int create_filenode(const char *filename, const struct stat *st)
 
 static int oshfs_getattr(const char *path, struct stat *stbuf)
 {
-    cout<<"*getattr:"<<path<<endl;
+    //cout<<"*getattr:"<<path<<endl;
     int ret = 0;
     Filenode *node = get_filenode(path);
     if(strcmp(path, "/") == 0) {
-        cout<<"in/"<<endl;
         memset(stbuf, 0, sizeof(struct stat));
         stbuf->st_mode = S_IFDIR | 0755;
     } else if(node) {
-        cout<<"innode"<<endl;
-        prtNode(node);
         memcpy(stbuf, &(node->st), sizeof(struct stat));
-        prtNode(node);
     } else {
-        cout<<"NOENT"<<endl;
         ret = -ENOENT;
     }
     return ret;
@@ -177,7 +170,7 @@ static int oshfs_getattr(const char *path, struct stat *stbuf)
 
 static int oshfs_readdir(const char *path, void *buf, fuse_fill_dir_t filler, off_t offset, struct fuse_file_info *fi)
 {
-    cout<<"*readdir"<<endl;
+    //cout<<"*readdir"<<endl;
     Location ln = binfo->root;
     filler(buf, ".", NULL, 0);
     filler(buf, "..", NULL, 0);
@@ -191,7 +184,7 @@ static int oshfs_readdir(const char *path, void *buf, fuse_fill_dir_t filler, of
 
 static int oshfs_mknod(const char *path, mode_t mode, dev_t dev)
 {
-    cout<<"*mknod"<<endl;
+    //cout<<"*mknod"<<endl;
     struct stat st;
     st.st_mode = S_IFREG | 0644;
     st.st_uid = fuse_get_context()->uid;
@@ -210,7 +203,7 @@ static int oshfs_open(const char *path, struct fuse_file_info *fi)
 
 static int oshfs_write(const char *path, const char *buf, size_t size, off_t offset, struct fuse_file_info *fi)
 {
-    cout<<"*write:"<<path<<" "<<offset<<" "<<size<<endl;
+    //cout<<"*write:"<<path<<" "<<offset<<" "<<size<<endl;
     Filenode *node = get_filenode(path);
 
     if(node == NULL){
@@ -238,9 +231,9 @@ static int oshfs_write(const char *path, const char *buf, size_t size, off_t off
         while(nextBlock[nowmem] != 0){      //找到当前最后一个块
             nowmem = nextBlock[nowmem];
         }
-        cout<<"lastblocks:"<<nowmem<<endl;
-        cout<<"needblocks:"<<need<<endl;
-        qmem->prt();
+        //cout<<"lastblocks:"<<nowmem<<endl;
+        //cout<<"needblocks:"<<need<<endl;
+        //qmem->prt();
         while(node->st.st_blocks < need){   //块数不足,增加新块
             if(qmem->empty()){
                 cerr << "Not enough storage!" << endl;
@@ -263,7 +256,7 @@ static int oshfs_write(const char *path, const char *buf, size_t size, off_t off
         nowmem = nextBlock[nowmem];
         bn++;
     }
-    cout<<"find offset in block:"<<nowmem<<endl;
+    //cout<<"find offset in block:"<<nowmem<<endl;
 
     size_t rest = offset - bn*Blocksize;    //不完全的第一个块内剩的空间
     size_t rsize = size;                    //还未写入的大小
@@ -287,14 +280,13 @@ static int oshfs_write(const char *path, const char *buf, size_t size, off_t off
         hsize += min(Blocksize, rsize);
     }
     //qmem->prt();
-    prtNode(node);
-    //while(qmem->empty());
+    //prtNode(node);
     return size;
 }
 
 static int oshfs_unlink(const char *path)
 {
-    cout<<"*unlink:"<<path<<endl;
+    //cout<<"*unlink:"<<path<<endl;
     Location ln = hashmap->findLocation(path+1);
     hashmap->clearNode(path+1);
     Filenode *node = ltoN(ln);
@@ -320,24 +312,22 @@ static int oshfs_unlink(const char *path)
         ltoN(node->next)->last = node->last;
     }
 
-    ql->prt();
-    cout<<ln<<endl;
+    //ql->prt();
+    //cout<<ln<<endl;
     referenceCount[ln.first] -= 1;
     ql->push(ln);
-    ql->prt();
     if(referenceCount[ln.first] == 0){  //该信息块已空，回收利用,队列中的位置在使用时处理
         qmem->push(ln.first);
         unmapBlock(ln.first);
         nextBlock[ln.first] = 0;
     }
-    ql->prt();
 
     return 0;
 }
 
 static int oshfs_read(const char *path, char *buf, size_t size, off_t offset, struct fuse_file_info *fi)
 {
-    cout<<"*read"<<endl;
+    //cout<<"*read"<<endl;
     const Filenode *node = get_filenode(path);
 
     if(node == NULL){
@@ -382,7 +372,7 @@ static int oshfs_read(const char *path, char *buf, size_t size, off_t offset, st
 
 static int oshfs_truncate(const char *path, off_t size)
 {
-    cout<<"*truncate:"<<path<<" size:"<<size<<endl;
+    //cout<<"*truncate:"<<path<<" size:"<<size<<endl;
     Filenode *node = get_filenode(path);
 
     if(node == NULL){
@@ -409,7 +399,7 @@ static int oshfs_truncate(const char *path, off_t size)
     }
 
     while(throwmem != 0){
-        cout<<"throw:"<<throwmem<<endl;
+        //cout<<"throw:"<<throwmem<<endl;
         MemNo nextthrow = nextBlock[throwmem];
         unmapBlock(throwmem);
         qmem->push(throwmem);    //回收利用
@@ -466,7 +456,7 @@ static const struct fuse_operations op = {  //C++貌似不支持不完全初始�
 
 int main(int argc, char *argv[])
 {
-    cout<<sizeof(Filenode)<<endl;
+    //cout<<sizeof(Filenode)<<endl;
     return fuse_main(argc, argv, &op, NULL);
 }
 
